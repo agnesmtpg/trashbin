@@ -1,3 +1,4 @@
+import json
 import threading
 import requests
 import streamlit as st
@@ -5,22 +6,14 @@ import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 import firebase_admin
 from firebase_admin import credentials, db
-import os
-from dotenv import load_dotenv
 
-# Load file .env jika running secara lokal
-load_dotenv()
-
-TELEGRAM_BOT_TOKEN = os.getenv("8402326442:AAEHf63VFu1-dSTsQ0ywkP0rMv95fN93-D8")
-TELEGRAM_CHAT_ID = os.getenv("5187138976")
-
+st.set_page_config(page_title="Smart Trash Bin - Realtime", page_icon="♻️", layout="wide")
 
 # --- KONFIGURASI TELEGRAM & FIREBASE ---
-TELEGRAM_BOT_TOKEN = "8402326442:AAEHf63VFu1-dSTsQ0ywkP0rMv95fN93-D8"
-TELEGRAM_CHAT_ID = "5187138976"
+TELEGRAM_BOT_TOKEN = st.secrets["TELEGRAM_BOT_TOKEN"]
+TELEGRAM_CHAT_ID = st.secrets["TELEGRAM_CHAT_ID"]
 TELEGRAM_BOT_URL = "https://t.me/maaury_bot"
-STREAMLIT_URL = "https://trashbinfuzzy.streamlit.app/"  # Sesuaikan jika sudah di-deploy (misal: Streamlit Community Cloud)
-FIREBASE_KEY = "UVmxCY8ZivzNaSTMRU1bJJcTHRiy2oOjEMsOxw1U"
+STREAMLIT_URL = "https://trashbinfuzzy.streamlit.app/"
 
 # --- INISIALISASI FIREBASE ADMIN SDK ---
 if not firebase_admin._apps:
