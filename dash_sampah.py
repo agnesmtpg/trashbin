@@ -19,11 +19,12 @@ TELEGRAM_CHAT_ID = os.getenv("5187138976")
 TELEGRAM_BOT_TOKEN = "8402326442:AAEHf63VFu1-dSTsQ0ywkP0rMv95fN93-D8"
 TELEGRAM_CHAT_ID = "5187138976"
 TELEGRAM_BOT_URL = "https://t.me/maaury_bot"
-STREAMLIT_URL = "http://127.0.0.1:8501"  # Sesuaikan jika sudah di-deploy (misal: Streamlit Community Cloud)
+STREAMLIT_URL = "https://trashbinfuzzy.streamlit.app/"  # Sesuaikan jika sudah di-deploy (misal: Streamlit Community Cloud)
 
 # --- INISIALISASI FIREBASE ADMIN SDK ---
 if not firebase_admin._apps:
-    cred = credentials.Certificate("serviceAccountKey.json")
+    key_dict = json.loads(st.secrets["FIREBASE_KEY"])
+    cred = credentials.Certificate(key_dict)
     firebase_admin.initialize_app(cred, {
         'databaseURL': 'https://pemilah-sampah-otomatis-c8d2e-default-rtdb.firebaseio.com/'
     })
