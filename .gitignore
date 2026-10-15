@@ -1,0 +1,11 @@
+ # Kredensial & Key Rahasia
+serviceAccountKey.json
+.env
+secrets.toml
+*.json
+
+# Folder Python & Virtual Environment
+venv/
+.venv/
+__pycache__/
+.streamlit/secrets.toml
