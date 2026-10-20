@@ -19,25 +19,38 @@ STREAMLIT_URL = "http://127.0.0.1:8501"  # Sesuaikan jika sudah di-deploy (misal
 
 # --- INISIALISASI FIREBASE ADMIN SDK ---
 if not firebase_admin._apps:
-    if "firebase_key" in st.secrets:
-        key_dict = dict(st.secrets["firebase_key"])
-        # Format string mentah perlu di-replace \\n menjadi \n
-        key_dict["private_key"] = key_dict["private_key"].replace("\\n", "\n")
-    else:
-        import json
+    key_dict = None
 
+    # 1. Cek jika FIREBASE_KEY ada di st.secrets sebagai string JSON
+    if "FIREBASE_KEY" in st.secrets:
+        key_dict = json.loads(st.secrets["FIREBASE_KEY"])
+
+    # 2. Cek jika firebase_key ada di st.secrets sebagai dict/TOML table
+    elif "firebase_key" in st.secrets:
+        key_dict = dict(st.secrets["firebase_key"])
+        if "private_key" in key_dict:
+            key_dict["private_key"] = key_dict["private_key"].replace(
+                "\\n", "\n"
+            )
+
+    # 3. Fallback jika running di lokal (dan file json memang ada)
+    elif os.path.exists("serviceAccountKey.json"):
         with open("serviceAccountKey.json") as f:
             key_dict = json.load(f)
 
-    cred = credentials.Certificate(key_dict)
-    firebase_admin.initialize_app(
-        cred,
-        {
-            "databaseURL": "https://pemilah-sampah-otomatis-c8d2e-default-rtdb.firebaseio.com/"
-        },
-    )
-
-ref = db.reference("/")  # sesuaikan path jika data ada di node tertentu
+    # Jika kredensial berhasil dimuat
+    if key_dict:
+        cred = credentials.Certificate(key_dict)
+        firebase_admin.initialize_app(
+            cred,
+            {
+                "databaseURL": "https://pemilah-sampah-otomatis-c8d2e-default-rtdb.firebaseio.com/"
+            },
+        )
+    else:
+        st.error(
+            "Kredensial Firebase tidak ditemukan! Periksa konfigurasi Secrets di Streamlit Cloud."
+        )
 
 # --- FUNGSI BACA DATA FIREBASE ---
 def load_firebase_data():
