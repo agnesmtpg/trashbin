@@ -1,21 +1,25 @@
+import json  # <--- DITAMBAHKAN (mencegah NameError pada json.loads)
+import os
 import threading
+import time  # <--- DITAMBAHKAN (mencegah NameError pada time.time)
+from dotenv import load_dotenv
+import firebase_admin
+from firebase_admin import credentials, db
 import requests
 import streamlit as st
 import telebot
-from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
-import firebase_admin
-from firebase_admin import credentials, db
-import os
-from dotenv import load_dotenv
+from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 # Load file .env jika running secara lokal
 load_dotenv()
 
 # --- KONFIGURASI TELEGRAM & FIREBASE ---
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "8402326442:AAEHf63VFu1-dSTsQ0ywkP0rMv95fN93-D8")
+TELEGRAM_BOT_TOKEN = os.getenv(
+    "TELEGRAM_BOT_TOKEN", "8402326442:AAEHf63VFu1-dSTsQ0ywkP0rMv95fN93-D8"
+)
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "5187138976")
 TELEGRAM_BOT_URL = "https://t.me/maaury_bot"
-STREAMLIT_URL = "http://127.0.0.1:8501"  # Sesuaikan jika sudah di-deploy (misal: Streamlit Community Cloud)
+STREAMLIT_URL = "http://127.0.0.1:8501"
 
 # --- INISIALISASI FIREBASE ADMIN SDK ---
 if not firebase_admin._apps:
@@ -51,6 +55,8 @@ if not firebase_admin._apps:
         st.error(
             "Kredensial Firebase tidak ditemukan! Periksa konfigurasi Secrets di Streamlit Cloud."
         )
+
+ref = db.reference("/")
 
 # --- FUNGSI BACA DATA FIREBASE ---
 def load_firebase_data():
