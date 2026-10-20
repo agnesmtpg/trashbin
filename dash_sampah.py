@@ -19,19 +19,21 @@ STREAMLIT_URL = "http://127.0.0.1:8501"  # Sesuaikan jika sudah di-deploy (misal
 
 # --- INISIALISASI FIREBASE ADMIN SDK ---
 if not firebase_admin._apps:
-    # 1. Ambil dictionary dari Streamlit Secrets
-    key_dict = dict(st.secrets["firebase_key"])
+    if "firebase_key" in st.secrets:
+        key_dict = dict(st.secrets["firebase_key"])
+        # Format string mentah perlu di-replace \\n menjadi \n
+        key_dict["private_key"] = key_dict["private_key"].replace("\\n", "\n")
+    else:
+        import json
 
-    # 2. Inisialisasi credentials dari dictionary (bukan file path)
+        with open("serviceAccountKey.json") as f:
+            key_dict = json.load(f)
+
     cred = credentials.Certificate(key_dict)
-
-    # 3. Initialize app
     firebase_admin.initialize_app(
         cred,
         {
-            'databaseURL': (
-                'https://pemilah-sampah-otomatis-c8d2e-default-rtdb.firebaseio.com/'  # Sesuaikan URL RTDB Anda
-            )
+            "databaseURL": "https://pemilah-sampah-otomatis-c8d2e-default-rtdb.firebaseio.com/"
         },
     )
 
