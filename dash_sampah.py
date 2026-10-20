@@ -20,7 +20,7 @@ STREAMLIT_URL = "http://127.0.0.1:8501"  # Sesuaikan jika sudah di-deploy (misal
 # --- INISIALISASI FIREBASE ADMIN SDK ---
 if not firebase_admin._apps:
     # 1. Ambil dictionary dari Streamlit Secrets
-    key_dict = dict(st.secrets["firebase_secret"])
+    key_dict = dict(st.secrets["firebase_key"])
 
     # 2. Inisialisasi credentials dari dictionary (bukan file path)
     cred = credentials.Certificate(key_dict)
