@@ -19,7 +19,7 @@ TELEGRAM_BOT_TOKEN = os.getenv(
 )
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "5187138976")
 TELEGRAM_BOT_URL = "https://t.me/maaury_bot"
-STREAMLIT_URL = "http://127.0.0.1:8501"
+STREAMLIT_URL = "https://trashbinfuzzy.streamlit.app/"
 
 # --- INISIALISASI FIREBASE ADMIN SDK ---
 if not firebase_admin._apps:
