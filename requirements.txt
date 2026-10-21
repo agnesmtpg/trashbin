@@ -3,3 +3,4 @@ firebase-admin
 requests
 pyTelegramBotAPI
 python-dotenv
+streamlit-autorefresh
