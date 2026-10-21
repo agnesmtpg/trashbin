@@ -60,27 +60,32 @@ ref = db.reference("/")
 
 # --- FUNGSI BACA DATA FIREBASE ---
 def load_firebase_data():
-    """Baca path yang ditulis ESP32, lalu ubah ke format yang dipakai dashboard."""
+    """Baca data ESP32 dari Firebase, sekaligus tandai apakah koneksi berhasil."""
     try:
         tong = db.reference("/Tong_Sampah").get() or {}
         klasifikasi = db.reference("/Klasifikasi_Terakhir").get() or {}
         ts = db.reference("/terakhir_update").get()
 
-        # Timestamp server Firebase berupa milidetik, ubah ke detik
         if ts is not None:
             ts = float(ts)
-            if ts > 1e11:
+            if ts > 1e11:  # timestamp Firebase dalam milidetik
                 ts = ts / 1000.0
 
+        org = tong.get("Organik", {})
+        anorg = tong.get("Anorganik", {})
+
         return {
-            "kapasitas_organik": int(tong.get("Organik", {}).get("kapasitas_persen", 0)),
-            "kapasitas_anorganik": int(tong.get("Anorganik", {}).get("kapasitas_persen", 0)),
+            "firebase_ok": True,
+            "kapasitas_organik": int(org.get("kapasitas_persen", 0)),
+            "kapasitas_anorganik": int(anorg.get("kapasitas_persen", 0)),
+            "ultra_organik": "kapasitas_persen" in org,
+            "ultra_anorganik": "kapasitas_persen" in anorg,
             "sampah_terakhir": klasifikasi.get("kategori", "Belum ada"),
             "terakhir_update": ts,
         }
     except Exception as e:
         print(f"Gagal memuat data dari Firebase: {e}")
-        return {}
+        return {"firebase_ok": False}
 
 def get_trash_status_text():
     """Fungsi helper untuk format status teks yang dikirim ke Telegram"""
@@ -240,14 +245,45 @@ last_trash = data.get("sampah_terakhir", "Belum ada")
 last_seen = data.get("terakhir_update")  # epoch detik, dikirim oleh ESP32
 
 # --- POP UP STATUS WIFI ---
-WIFI_TIMEOUT = 30  # detik; lewat dari ini dianggap offline
+# --- STATUS KONEKSI ---
+WIFI_TIMEOUT = 30  # detik; lewat dari ini dianggap ESP32 offline
+
+firebase_ok = data.get("firebase_ok", False)
 
 if last_seen is None:
-    wifi_status = "unknown"
+    esp_status = "unknown"
 elif time.time() - float(last_seen) <= WIFI_TIMEOUT:
-    wifi_status = "online"
+    esp_status = "online"
 else:
-    wifi_status = "offline"
+    esp_status = "offline"
+
+# Pop up hanya muncul saat pertama dibuka atau saat status berubah
+if st.session_state.get("firebase_ok") != firebase_ok:
+    st.session_state["firebase_ok"] = firebase_ok
+    if firebase_ok:
+        st.toast("Web terhubung ke Firebase", icon="✅")
+    else:
+        st.toast("Web gagal terhubung ke Firebase", icon="❌")
+
+if st.session_state.get("esp_status") != esp_status:
+    st.session_state["esp_status"] = esp_status
+    if esp_status == "online":
+        st.toast("ESP32 online, data masuk ke Firebase", icon="✅")
+    elif esp_status == "offline":
+        st.toast("ESP32 offline, tidak ada data baru", icon="❌")
+    else:
+        st.toast("ESP32 belum pernah mengirim data", icon="⚠️")
+
+
+def status_badge(label, kondisi):
+    """kondisi: True = hijau, False = merah, None = kuning"""
+    if kondisi is True:
+        kelas = "badge-green"
+    elif kondisi is False:
+        kelas = "badge-red"
+    else:
+        kelas = "badge-yellow"
+    return f'<span class="{kelas}" style="border:1px solid #e5e7eb;margin-right:8px;">{label}</span>'
 
 # Munculkan pop up saat pertama dibuka atau saat status berubah
 if st.session_state.get("wifi_status") != wifi_status:
