@@ -60,8 +60,24 @@ ref = db.reference("/")
 
 # --- FUNGSI BACA DATA FIREBASE ---
 def load_firebase_data():
+    """Baca path yang ditulis ESP32, lalu ubah ke format yang dipakai dashboard."""
     try:
-        return ref.get() or {}
+        tong = db.reference("/Tong_Sampah").get() or {}
+        klasifikasi = db.reference("/Klasifikasi_Terakhir").get() or {}
+        ts = db.reference("/terakhir_update").get()
+
+        # Timestamp server Firebase berupa milidetik, ubah ke detik
+        if ts is not None:
+            ts = float(ts)
+            if ts > 1e11:
+                ts = ts / 1000.0
+
+        return {
+            "kapasitas_organik": int(tong.get("Organik", {}).get("kapasitas_persen", 0)),
+            "kapasitas_anorganik": int(tong.get("Anorganik", {}).get("kapasitas_persen", 0)),
+            "sampah_terakhir": klasifikasi.get("kategori", "Belum ada"),
+            "terakhir_update": ts,
+        }
     except Exception as e:
         print(f"Gagal memuat data dari Firebase: {e}")
         return {}
