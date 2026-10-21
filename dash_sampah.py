@@ -349,23 +349,32 @@ with col_anorg:
         st.progress(min(cap_anorg, 100) / 100.0)
         st.markdown(badge(cap_anorg), unsafe_allow_html=True)
 
-# DETEKSI TERAKHIR
-with st.container(border=True, key="card_deteksi"):
-    st.markdown("### 🔍 Deteksi Terakhir")
-    st.markdown(f"**{last_trash}**")
+def load_history(limit=10):
+    """Ambil riwayat klasifikasi terbaru dari /History."""
+    try:
+        raw = db.reference("/History").order_by_key().limit_to_last(limit).get() or {}
+        rows = []
+        for item in reversed(list(raw.values())):  # terbaru di atas
+            waktu = item.get("waktu")
+            if waktu:
+                waktu = time.strftime(
+                    "%d-%m-%Y %H:%M:%S", time.localtime(float(waktu) / 1000.0 + 7 * 3600 - time.timezone)
+                )
+            rows.append({
+                "Waktu": waktu or "-",
+                "Kategori": item.get("kategori", "-"),
+                "Skor fuzzy": round(float(item.get("skor_fuzzy", 0)), 1),
+            })
+        return rows
+    except Exception as e:
+        print(f"Gagal memuat history: {e}")
+        return []
 
-# TES NOTIFIKASI
-with st.expander("🔔 Tes Notifikasi Telegram"):
-    col_t1, col_t2 = st.columns([3, 1])
-    with col_t1:
-        custom_msg = st.text_input(
-            "Pesan",
-            "⚠️ Tes Peringatan: Tempat sampah mendekati kapasitas penuh!",
-            label_visibility="collapsed",
-        )
-    with col_t2:
-        if st.button("📤 Kirim", use_container_width=True):
-            if send_telegram_message(custom_msg):
-                st.success("Notifikasi berhasil dikirim!")
-            else:
-                st.error("Gagal mengirim notifikasi.")
+# RIWAYAT DETEKSI
+with st.container(border=True, key="card_history"):
+    st.markdown("### 🕒 Riwayat Deteksi")
+    riwayat = load_history(10)
+    if riwayat:
+        st.dataframe(riwayat, use_container_width=True, hide_index=True)
+    else:
+        st.caption("Belum ada riwayat deteksi.")
