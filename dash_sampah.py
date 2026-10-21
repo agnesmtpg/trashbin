@@ -285,16 +285,6 @@ def status_badge(label, kondisi):
         kelas = "badge-yellow"
     return f'<span class="{kelas}" style="border:1px solid #e5e7eb;margin-right:8px;">{label}</span>'
 
-# Munculkan pop up saat pertama dibuka atau saat status berubah
-if st.session_state.get("wifi_status") != wifi_status:
-    st.session_state["wifi_status"] = wifi_status
-    if wifi_status == "online":
-        st.toast("WiFi terdeteksi, ESP32 online", icon="✅")
-    elif wifi_status == "offline":
-        st.toast("WiFi tidak terdeteksi, ESP32 offline", icon="❌")
-    else:
-        st.toast("Status WiFi belum diketahui", icon="⚠️")
-
 
 def badge(persen):
     if persen >= 90:
@@ -316,6 +306,27 @@ with col_h3:
     if st.button("🔄 Refresh", use_container_width=True):
         st.rerun()
 
+st.write("")
+
+# BARIS STATUS KONEKSI
+esp_kondisi = True if esp_status == "online" else (False if esp_status == "offline" else None)
+
+st.markdown(
+    status_badge("Firebase: terhubung" if firebase_ok else "Firebase: gagal", firebase_ok)
+    + status_badge(
+        {"online": "ESP32: online", "offline": "ESP32: offline", "unknown": "ESP32: belum ada data"}[esp_status],
+        esp_kondisi,
+    )
+    + status_badge(
+        "Ultrasonik organik: ada data" if data.get("ultra_organik") else "Ultrasonik organik: belum ada data",
+        True if data.get("ultra_organik") else False,
+    )
+    + status_badge(
+        "Ultrasonik anorganik: ada data" if data.get("ultra_anorganik") else "Ultrasonik anorganik: belum ada data",
+        True if data.get("ultra_anorganik") else False,
+    ),
+    unsafe_allow_html=True,
+)
 st.write("")
 
 # KAPASITAS
