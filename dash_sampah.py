@@ -301,7 +301,7 @@ def badge(persen):
 # HEADER
 col_h1, col_h2, col_h3 = st.columns([3, 1, 1])
 with col_h1:
-    st.title("♻️ Smart Trash Bin")
+    st.title("♻️ Trash Bin")
 with col_h2:
     st.write("")
     st.link_button("💬 Telegram Bot", TELEGRAM_BOT_URL, use_container_width=True)
