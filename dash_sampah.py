@@ -173,7 +173,7 @@ start_bot_thread()
 # --- TAMPILAN DASHBOARD STREAMLIT ---
 st.set_page_config(page_title="Smart Trash Bin", page_icon="♻️", layout="wide")
 
-st_autorefresh(interval=3000, key="auto_refresh")  # refresh tiap 3 detik
+st_autorefresh(interval=2000, key="auto_refresh")  # refresh tiap 3 detik
 
 st.markdown("""
 <style>
