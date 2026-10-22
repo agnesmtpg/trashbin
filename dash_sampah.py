@@ -60,6 +60,7 @@ if not firebase_admin._apps:
 ref = db.reference("/")
 
 # --- FUNGSI BACA DATA FIREBASE ---
+@st.cache_data(ttl=2)
 def load_firebase_data():
     """Baca data ESP32 dari Firebase, sekaligus tandai apakah koneksi berhasil."""
     try:
@@ -349,19 +350,14 @@ with col_anorg:
         st.progress(min(cap_anorg, 100) / 100.0)
         st.markdown(badge(cap_anorg), unsafe_allow_html=True)
 
+@st.cache_data(ttl=10)
 def load_history(limit=10):
     """Ambil riwayat klasifikasi terbaru dari /History."""
     try:
         raw = db.reference("/History").order_by_key().limit_to_last(limit).get() or {}
         rows = []
         for item in reversed(list(raw.values())):  # terbaru di atas
-            waktu = item.get("waktu")
-            if waktu:
-                waktu = time.strftime(
-                    "%d-%m-%Y %H:%M:%S", time.localtime(float(waktu) / 1000.0 + 7 * 3600 - time.timezone)
-                )
             rows.append({
-                "Waktu": waktu or "-",
                 "Kategori": item.get("kategori", "-"),
                 "Skor fuzzy": round(float(item.get("skor_fuzzy", 0)), 1),
             })
@@ -369,7 +365,7 @@ def load_history(limit=10):
     except Exception as e:
         print(f"Gagal memuat history: {e}")
         return []
-
+        
 # RIWAYAT DETEKSI
 with st.container(border=True, key="card_history"):
     st.markdown("### 🕒 Riwayat Deteksi")
